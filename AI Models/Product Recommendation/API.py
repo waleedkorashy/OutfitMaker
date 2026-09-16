@@ -30,6 +30,22 @@ for _stream in (sys.stdout, sys.stderr):
 
 app = Flask(__name__)
 
+
+@app.after_request
+def add_cors_headers(resp):
+    # The AI endpoints are consumed directly from the browser (frontend on
+    # Cloudflare), bypassing the ASP.NET proxy which Cloudflare bot-fight
+    # blocks. Allow any origin — the model responses carry no credentials.
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    resp.headers['Access-Control-Max-Age'] = '86400'
+    return resp
+
+
+def _handle_options():
+    return ('', 204)
+
 # The visual-recommendation stack (TensorFlow + MobileNetV2 + embeddings +
 # nearest-neighbours) is loaded lazily on the first /recommend request instead
 # of at startup. Startup only needs the tiny scikit-learn size model, keeping
@@ -69,15 +85,21 @@ def _get_recommender():
     return _recommender
 
 
-@app.route('/health', methods=['GET'])
+@app.route('/health', methods=['GET', 'OPTIONS'])
 def health():
+    if request.method == 'OPTIONS':
+        return _handle_options()
+
     # Used by uptime keep-alive monitors (e.g. UptimeRobot) so a free-tier
     # host that sleeps on idle is woken back up. 200 = healthy.
     return jsonify({'status': 'ok'})
 
 
-@app.route('/recommend', methods=['POST'])
+@app.route('/recommend', methods=['POST', 'OPTIONS'])
 def recommend():
+    if request.method == 'OPTIONS':
+        return _handle_options()
+
     # Check if an image file is uploaded
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'})
@@ -116,8 +138,11 @@ with open(os.path.join(BASE_DIR, 'model.pkl'), 'rb') as f:
     loaded_model = pickle.load(f)
 
 
-@app.route('/predict', methods=['POST'])
+@app.route('/predict', methods=['POST', 'OPTIONS'])
 def predict():
+    if request.method == 'OPTIONS':
+        return _handle_options()
+
     # Get data from the request
     data = request.json
     input_data = tuple(data['input_data'])

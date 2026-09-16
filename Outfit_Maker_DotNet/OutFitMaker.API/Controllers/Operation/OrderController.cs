@@ -30,6 +30,10 @@ namespace OutFitMaker.API.Controllers.Operation
             _orderServices = orderServices;
             _userRepo = userRepo;
             _httpClient = httpClientFactory.CreateClient();
+            // SnapDeploy fronts the AI container with Cloudflare bot-fight protection
+            // that challenges server-default HTTP clients. A real browser User-Agent
+            // lets the request through (verified: direct curl with this UA returns JSON).
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36");
             _aiOptions = aiOptions.Value;
         }
         #endregion

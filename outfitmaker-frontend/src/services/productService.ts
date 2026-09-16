@@ -1,4 +1,4 @@
-import { apiClient } from './api';
+import { apiClient, AI_BASE_URL, AI_WAKE_URL } from './api';
 import type {
   AddOrderDto,
   ApiResponse,
@@ -126,21 +126,72 @@ export async function saveUserSize(size: string): Promise<void> {
 
 /* ------------------------- AI Services ------------------------- */
 
-/** Forward an uploaded image to the AI visual recommendation service. */
-export async function recommendFromImage(file: File): Promise<Product[]> {
-  const form = new FormData();
-  form.append('file', file);
-  const res = await apiClient.post<ApiResponse<Product[]>>('/api/Order/recommend', form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return Array.isArray(res.data.data) ? (res.data.data as Product[]) : [];
+const AI_STARTUP_POLL_MS = 3000;
+const AI_STARTUP_TIMEOUT_MS = 90_000;
+
+function basename(name: string): string {
+  return name.split(/[\\/]/).pop() ?? name;
 }
 
-/** Forward body measurements to the size prediction model. */
-export async function predictSize(inputData: number[]): Promise<SizePrediction> {
-  const res = await apiClient.post<SizePrediction | string>('/api/Order/predict', {
-    input_data: inputData,
+async function aiHealthOk(): Promise<boolean> {
+  try {
+    const res = await fetch(`${AI_BASE_URL}/health`, { method: 'GET' });
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data?.status === 'ok';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Free-tier containers sleep on idle; SnapDeploy serves an HTML wake page
+ * instead of JSON while warming up. Trigger the wake API and poll /health
+ * until the model container responds, so direct browser calls succeed.
+ */
+async function ensureAiAwake(): Promise<void> {
+  if (await aiHealthOk()) return;
+  await fetch(AI_WAKE_URL, { method: 'POST' }).catch(() => {});
+  const deadline = Date.now() + AI_STARTUP_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, AI_STARTUP_POLL_MS));
+    if (await aiHealthOk()) return;
+  }
+  throw new Error('AI container is still starting up');
+}
+
+/** Upload an image and return visually similar products from the collection. */
+export async function recommendFromImage(file: File): Promise<Product[]> {
+  await ensureAiAwake();
+
+  const form = new FormData();
+  form.append('file', file);
+
+  const res = await fetch(`${AI_BASE_URL}/recommend`, {
+    method: 'POST',
+    body: form,
   });
-  if (typeof res.data === 'string') return JSON.parse(res.data) as SizePrediction;
-  return res.data as SizePrediction;
+  if (!res.ok) throw new Error(`AI recommend failed: ${res.status}`);
+
+  const data = (await res.json()) as { recommended_images?: string[] };
+  const recommended = (data.recommended_images ?? []).map(basename);
+
+  // Map matched image filenames back to products in the catalog.
+  const catalog = await getBestSellerProducts();
+  return catalog.filter((p) => recommended.includes(basename(p.imageUrl)));
+}
+
+/** Predict clothing size from body measurements. */
+export async function predictSize(inputData: number[]): Promise<SizePrediction> {
+  await ensureAiAwake();
+
+  const res = await fetch(`${AI_BASE_URL}/predict`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input_data: inputData }),
+  });
+  if (!res.ok) throw new Error(`AI predict failed: ${res.status}`);
+
+  const data = (await res.json()) as SizePrediction;
+  return data;
 }

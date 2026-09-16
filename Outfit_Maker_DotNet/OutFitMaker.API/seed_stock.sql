@@ -9,12 +9,14 @@ DECLARE @prods TABLE (ProductId uniqueidentifier, Name nvarchar(255));
 INSERT INTO @prods (ProductId, Name)
 SELECT Id, Name FROM Main.Products WHERE IsDeleted = 0;
 
-INSERT INTO Main.ProductsStock (ProductId, SizeId, Quantity)
-SELECT p.ProductId,
+INSERT INTO Main.ProductsStock (Id, ProductId, SizeId, Quantity, IsDeleted, CreationDate, LastUpdatedDate)
+SELECT NEWID(),
+       p.ProductId,
        s.SizeId,
        CASE WHEN (ABS(CHECKSUM(p.Name)) + s.RowNum) % 4 = 0 THEN 0
             ELSE 3 + ((ABS(CHECKSUM(p.Name)) + s.RowNum * 7) % 38)
-       END AS Quantity
+       END AS Quantity,
+       0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET()
 FROM @prods p
 CROSS JOIN @sizes s;
 

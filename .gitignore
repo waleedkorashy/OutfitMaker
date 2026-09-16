@@ -34,6 +34,8 @@ AI Models/Product Recommendation/ai.out.log
 AI Models/Product Recommendation/ai.err.log
 ai.out.log
 ai.err.log
+gunicorn.out.log
+gunicorn.err.log
 
 # ---- OS / editor ----
 .DS_Store

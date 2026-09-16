@@ -2,11 +2,11 @@ import os
 import sys
 import pickle
 import numpy as np
+import tensorflow
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.layers import GlobalMaxPooling2D
-from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input
+from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input
 from numpy.linalg import norm
-import tensorflow
 
 for _stream in (sys.stdout, sys.stderr):
     if hasattr(_stream, 'reconfigure'):
@@ -17,7 +17,10 @@ for _stream in (sys.stdout, sys.stderr):
 
 IMAGES_DIR = r'E:\EELU\4\gradution project\OutFit Maker\OutFit_Maker_DotNet\OutfitMaker.API\Images'
 
-model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+# MobileNetV2: much lighter than ResNet50 (~14 MB weights vs ~100 MB) so the
+# deployed service fits a 512 MB free-tier container while remaining a strong
+# general-purpose visual feature extractor.
+model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
 model.trainable = False
 model = tensorflow.keras.Sequential([model, GlobalMaxPooling2D()])
 
@@ -54,3 +57,4 @@ if not feature_list:
 pickle.dump(np.array(feature_list), open('embeddings.pkl', 'wb'))
 pickle.dump(filenames, open('filenames.pkl', 'wb'))
 print(f'DONE: {len(filenames)} images saved to embeddings.pkl / filenames.pkl')
+print(f'embedding dim: {feature_list[0].shape[0]}')

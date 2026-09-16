@@ -3,15 +3,17 @@ import sys
 import numpy as np
 import pickle
 from flask import Flask, request, jsonify
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.layers import GlobalMaxPooling2D
-from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input
 from numpy.linalg import norm
 from sklearn.neighbors import NearestNeighbors
-import tensorflow
+
+# Cap TensorFlow's thread pools: keeps the RSS footprint small enough for
+# 512 MB free-tier containers (must be set before tensorflow is imported).
+os.environ.setdefault('TF_NUM_INTRAOP_THREADS', '1')
+os.environ.setdefault('TF_NUM_INTEROP_THREADS', '1')
+os.environ.setdefault('TF_CPP_MIN_LOG_LEVEL', '2')
 
 # Make all paths relative to this file so the app works regardless of the
-# current working directory (important when running in a container / HF Space).
+# current working directory (important when running in a container).
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOADS_DIR = os.path.join(BASE_DIR, 'uploads')
 os.makedirs(UPLOADS_DIR, exist_ok=True)
@@ -28,39 +30,50 @@ for _stream in (sys.stdout, sys.stderr):
 
 app = Flask(__name__)
 
+# The visual-recommendation stack (TensorFlow + MobileNetV2 + embeddings +
+# nearest-neighbours) is loaded lazily on the first /recommend request instead
+# of at startup. Startup only needs the tiny scikit-learn size model, keeping
+# boot time and peak memory low on free-tier containers.
+_recommender = None
+
+
+def _get_recommender():
+    """Build (once) the lazy MobileNetV2 feature extractor + index."""
+    global _recommender
+    if _recommender is not None:
+        return _recommender
+
+    from tensorflow.keras.preprocessing import image
+    from tensorflow.keras.layers import GlobalMaxPooling2D
+    from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input
+    import tensorflow
+
+    extractor = MobileNetV2(weights='imagenet', include_top=False,
+                            input_shape=(224, 224, 3))
+    extractor.trainable = False
+    extractor = tensorflow.keras.Sequential([extractor, GlobalMaxPooling2D()])
+
+    feature_list = pickle.load(open(os.path.join(BASE_DIR, 'embeddings.pkl'), 'rb'))
+    filenames = pickle.load(open(os.path.join(BASE_DIR, 'filenames.pkl'), 'rb'))
+
+    neighbors = NearestNeighbors(n_neighbors=6, algorithm='brute', metric='euclidean')
+    neighbors.fit(feature_list)
+
+    _recommender = {
+        'extractor': extractor,
+        'preprocess_input': preprocess_input,
+        'image': image,
+        'neighbors': neighbors,
+        'filenames': filenames,
+    }
+    return _recommender
+
 
 @app.route('/health', methods=['GET'])
 def health():
     # Used by uptime keep-alive monitors (e.g. UptimeRobot) so a free-tier
-    # host (Render) that sleeps on idle is woken back up. 200 = healthy.
+    # host that sleeps on idle is woken back up. 200 = healthy.
     return jsonify({'status': 'ok'})
-
-# Load pre-trained ResNet50 model
-model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
-model.trainable = False
-
-model = tensorflow.keras.Sequential([
-    model,
-    GlobalMaxPooling2D()
-])
-
-# Load pre-computed feature vectors and filenames
-feature_list = pickle.load(open(os.path.join(BASE_DIR, 'embeddings.pkl'), 'rb'))
-filenames = pickle.load(open(os.path.join(BASE_DIR, 'filenames.pkl'), 'rb'))
-
-# Initialize NearestNeighbors model
-neighbors = NearestNeighbors(n_neighbors=6, algorithm='brute', metric='euclidean')
-neighbors.fit(feature_list)
-
-
-def extract_features(img_path, model):
-    img = image.load_img(img_path, target_size=(224, 224))
-    img_array = image.img_to_array(img)
-    expanded_img_array = np.expand_dims(img_array, axis=0)
-    preprocessed_img = preprocess_input(expanded_img_array)
-    result = model.predict(preprocessed_img, verbose=0).flatten()
-    normalized_result = result / norm(result)
-    return normalized_result
 
 
 @app.route('/recommend', methods=['POST'])
@@ -79,14 +92,21 @@ def recommend():
     file_path = os.path.join(UPLOADS_DIR, file.filename)
     file.save(file_path)
 
+    rec = _get_recommender()
+
     # Extract features from the uploaded image
-    query_features = extract_features(file_path, model)
+    img = rec['image'].load_img(file_path, target_size=(224, 224))
+    img_array = rec['image'].img_to_array(img)
+    expanded_img_array = np.expand_dims(img_array, axis=0)
+    preprocessed_img = rec['preprocess_input'](expanded_img_array)
+    result = rec['extractor'].predict(preprocessed_img, verbose=0).flatten()
+    query_features = result / norm(result)
 
     # Find nearest neighbors
-    distances, indices = neighbors.kneighbors([query_features])
+    distances, indices = rec['neighbors'].kneighbors([query_features])
 
     # Prepare recommended image paths
-    recommended_images = [filenames[idx] for idx in indices[0]]
+    recommended_images = [rec['filenames'][idx] for idx in indices[0]]
 
     return jsonify({'recommended_images': recommended_images})
 
@@ -107,8 +127,8 @@ def predict():
     # Make prediction
     prediction = loaded_model.predict(input_data_reshaped)
     predicted_class = prediction[0]
-    classes=['XXS','S','M','L','XL','XXL','XXXL']
-    class_name=classes[predicted_class]
+    classes = ['XXS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']
+    class_name = classes[predicted_class]
     print(predicted_class, class_name)
 
     # Return the prediction

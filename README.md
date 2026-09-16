@@ -7,6 +7,8 @@ photo, get visually similar products from the catalog).
 
 > Deployed end-to-end and live: React frontend on Cloudflare, ASP.NET Core API on
 > Windows hosting with SQL Server, and a Python Flask AI service in a container.
+>
+> **🔗 Visit the live site: [outfit-maker.wqorashy.workers.dev](https://outfit-maker.wqorashy.workers.dev)**
 
 ---
 

@@ -1,6 +1,8 @@
 flask==3.0.3
 gunicorn==23.0.0
-tensorflow-cpu==2.16.1
 scikit-learn==1.5.0
 numpy
 pillow
+# TensorFlow is architecture-specific (x86_64 vs aarch64) and is installed by
+# the Dockerfile accordingly. For local Windows development:
+#   pip install tensorflow-cpu==2.16.1

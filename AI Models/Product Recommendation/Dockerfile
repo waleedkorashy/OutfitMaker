@@ -9,12 +9,21 @@ WORKDIR /app
 
 ENV PYTHONUNBUFFERED=1
 ENV FLASK_DEBUG=0
-# Free-tier hosts (Render/Koyeb/Northflank) inject their own $PORT at
-# runtime, which overrides this fallback default.
+ENV TF_CPP_MIN_LOG_LEVEL=2
+# Hosts (SnapDeploy/Render/Koyeb/Northflank) inject their own $PORT at runtime,
+# which overrides this fallback default when no PORT is provided.
 ENV PORT=7860
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# TensorFlow wheels are platform-specific and there is no single PyPI package
+# for every architecture: install the right build for the build host.
+RUN ARCH="$(uname -m)" \
+    && if [ "$ARCH" = "x86_64" ]; then \
+         pip install --no-cache-dir tensorflow-cpu==2.16.1; \
+       else \
+         pip install --no-cache-dir tensorflow-aarch64==2.16.1; \
+       fi \
+    && pip install --no-cache-dir -r requirements.txt
 
 COPY API.py .
 COPY model.pkl .

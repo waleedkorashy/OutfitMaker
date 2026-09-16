@@ -16,40 +16,42 @@ Flask API powering two features of the OutFitMaker storefront:
 
 ```bash
 pip install -r requirements.txt
+pip install tensorflow-cpu==2.16.1   # Windows/local; the Dockerfile picks the right TF for the container arch
 python API.py
 ```
 
 Serves on `PORT` (default `5000`). Set `FLASK_DEBUG=1` only for development.
 
-## Deploy to Render.com (free)
+## Deploy to a container host (Render / SnapDeploy / similar)
 
-Hosted as a Docker web service on Render's free tier (no credit card needed for
-the hobby/free web service):
+Hosted as a Docker web service. Works with any host that builds a Dockerfile from
+this folder (namespace the folder as the build root, e.g. Render or SnapDeploy
+"root directory"). Nothing host-specific is baked in: the container binds
+`0.0.0.0:$PORT` (hosts inject their port, or it falls back to `7860`).
 
 1. Push this folder to GitHub (keep `Dockerfile`, `requirements.txt`, `API.py`,
    and the three `.pkl` files together in one directory).
-2. In [dashboard.render.com](https://dashboard.render.com) → **New** →
-   **Web Service** → connect the GitHub repo.
-3. Under **Root Directory** select the folder that contains the `Dockerfile`
-   (e.g. `AI Models/Product Recommendation`). Render builds from that
-   `Dockerfile`.
-4. **Runtime** is automatically detected as **Docker** from the Dockerfile.
-5. Create the service. Render injects a `PORT` environment variable at runtime,
-   which overrides the `7860` fallback in the Dockerfile — the container listens
-   on whatever port Render assigns.
-6. The service URL will be `https://<name>.onrender.com`.
-   - `https://<name>.onrender.com/predict`
-   - `https://<name>.onrender.com/recommend`
-   - `https://<name>.onrender.com/health`
+2. Point the host at the repo (e.g. Render: **New → Web Service**; SnapDeploy:
+   **New container**), and set **Root Directory** to the folder containing this
+   `Dockerfile` (`AI Models/Product Recommendation`).
+3. The host detects **Docker** from the Dockerfile and builds it. TensorFlow is
+   installed per build architecture (x86_64 → `tensorflow-cpu`, aarch64 →
+   `tensorflow-aarch64`), so the image builds on both.
+4. Uploaded env vars are optional: `FLASK_APP=app.py`, `FLASK_DEBUG=0`,
+   `FLASK_ENV=production`, `PORT` (auto or `7860`). A `SECRET_KEY` is not used by
+   this service — set any value if a host requires one.
+5. The service URL will be
+   `https://<name>.onrender.com` / `https://<name>.containers.snapdeploy.app`.
+   - `<url>/predict`
+   - `<url>/recommend`
+   - `<url>/health`
 
-### Keep-alive (free tier sleeps after ~15 min idle)
+### Keep-alive (free tiers sleep when idle)
 
-Free instances go to sleep and cold-start in 30–60 s on the next request. To keep
-it warm with a free monitor:
+Free instances go to sleep and cold-start on the next request. To keep it warm:
 
-- Create a free [UptimeRobot](https://uptimerobot.com) HTTP monitor pinging
-  `https://<name>.onrender.com/health` every 5 minutes — it wakes the instance
-  before a real user hits it.
+- A free [UptimeRobot](https://uptimerobot.com) HTTP monitor pinging
+  `<url>/health` every 5 minutes wakes the instance before a real user hits it.
 
 The `.NET` backend calls these endpoints with generous timeouts, so a cold start
 is tolerated, but the monitor avoids the wait entirely.

@@ -16,14 +16,13 @@ ENV PORT=7860
 
 COPY requirements.txt .
 # TensorFlow wheels are platform-specific and there is no single PyPI package
-# for every architecture: install the right build for the build host.
+# for every architecture: install the right build for the build host. TF and the
+# rest are resolved in ONE pip call so numpy/ml-dtypes stay consistent.
 RUN ARCH="$(uname -m)" \
-    && if [ "$ARCH" = "x86_64" ]; then \
-         pip install --no-cache-dir tensorflow-cpu==2.16.1; \
-       else \
-         pip install --no-cache-dir tensorflow-aarch64==2.16.1; \
-       fi \
-    && pip install --no-cache-dir -r requirements.txt
+    && if [ "$ARCH" = "x86_64" ]; then TF=tensorflow-cpu; else TF=tensorflow-aarch64; fi \
+    && pip install --no-cache-dir -r requirements.txt "${TF}==2.16.1"
+# Fail the build here, not at startup, if numpy/TensorFlow are ABI-incompatible.
+RUN python -c "import numpy, tensorflow; from tensorflow.keras.applications import ResNet50; print('TensorFlow OK:', tensorflow.__version__, 'numpy:', numpy.__version__)"
 
 COPY API.py .
 COPY model.pkl .

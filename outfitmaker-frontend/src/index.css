@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  /* Palette — Ivory / warm neutrals + Burgundy accent */
+  --color-ivory: #faf7f2;
+  --color-cream: #f5efe6;
+  --color-sand: #e9e0d3;
+  --color-ink: #1d1a17;
+  --color-charcoal: #2e2a25;
+  --color-slate-soft: #6b655c;
+  --color-slate-faint: #9b948a;
+  --color-line: #e4dccf;
+  --color-burgundy: #6f1d2b;
+  --color-burgundy-dark: #571520;
+  --color-burgundy-light: #8f3340;
+  --color-gold: #b28a4b;
+  --color-gold-light: #d7bd8f;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-ivory text-ink font-sans antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-serif;
+  }
+  *:focus-visible {
+    @apply outline-none ring-2 ring-burgundy ring-offset-2 ring-offset-ivory;
+  }
+}
+
+@layer utilities {
+  .container-fit {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.24em] text-slate-soft;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-burgundy px-7 py-3.5 text-sm font-semibold text-white transition duration-300 hover:bg-burgundy-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-ink/25 bg-transparent px-7 py-3.5 text-sm font-semibold text-ink transition duration-300 hover:border-ink hover:bg-ink hover:text-ivory active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-burgundy transition duration-300 hover:bg-burgundy/10 active:scale-[0.98];
+  }
+  .card-chip {
+    @apply inline-flex items-center rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-ink shadow-sm backdrop-blur;
+  }
+}
+
+/* Subtle reveal on scroll */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-fade-up {
+  animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.6s ease both;
+}
+
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.35); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+.animate-heart {
+  animation: heartPop 0.45s ease;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.25; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1); }
+}
+.ai-dot {
+  @apply inline-block h-2.5 w-2.5 rounded-full bg-burgundy;
+  animation: pulseDot 1.2s ease-in-out infinite;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cfc4b2;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}

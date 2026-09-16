@@ -1,0 +1,41 @@
+# ---- .NET / Visual Studio ----
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+.vs/
+*.suo
+*.user
+publish/
+*.pubxml
+*.binlog
+
+# ---- Frontend (Node / Vite) ----
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.env.local
+.env.*.local
+
+# ---- Database backups ----
+*.bak
+*.mdf
+*.ldf
+
+# ---- AI runtime (Flask) ----
+__pycache__/
+*.pyc
+*.pkl.bak
+AI Models/Product Recommendation/uploads/
+AI Models/Product Recommendation/*.log
+AI Models/Product Recommendation/ai.out.log
+AI Models/Product Recommendation/ai.err.log
+ai.out.log
+ai.err.log
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+.idea/

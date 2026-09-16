@@ -9,27 +9,27 @@ SET NOCOUNT ON;
 GO
 
 -- Sizes
-INSERT INTO Main.Sizes (Id, Name) SELECT '67b0cde6-d142-4ffb-2dea-08dc50d44ce6', N'L' WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '67b0cde6-d142-4ffb-2dea-08dc50d44ce6');
-INSERT INTO Main.Sizes (Id, Name) SELECT '1e089eaf-8acc-427e-2de9-08dc50d44ce6', N'M' WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '1e089eaf-8acc-427e-2de9-08dc50d44ce6');
-INSERT INTO Main.Sizes (Id, Name) SELECT '6374b2a5-b0d0-4cf5-2de8-08dc50d44ce6', N'S' WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '6374b2a5-b0d0-4cf5-2de8-08dc50d44ce6');
-INSERT INTO Main.Sizes (Id, Name) SELECT '0e617343-ed5a-48d4-2deb-08dc50d44ce6', N'XL' WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '0e617343-ed5a-48d4-2deb-08dc50d44ce6');
-INSERT INTO Main.Sizes (Id, Name) SELECT '8b8ceffa-2e14-4b60-2dec-08dc50d44ce6', N'XXL' WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '8b8ceffa-2e14-4b60-2dec-08dc50d44ce6');
-INSERT INTO Main.Sizes (Id, Name) SELECT '50b83dc9-ff72-4007-8c79-7980891b4e99', N'XXS' WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '50b83dc9-ff72-4007-8c79-7980891b4e99');
-INSERT INTO Main.Sizes (Id, Name) SELECT '95e2301a-0666-40de-2ded-08dc50d44ce6', N'XXXL' WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '95e2301a-0666-40de-2ded-08dc50d44ce6');
-INSERT INTO Main.Sizes (Id, Name) SELECT 'f8262547-4d22-435c-2dee-08dc50d44ce6', N'XXXXL' WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = 'f8262547-4d22-435c-2dee-08dc50d44ce6');
+INSERT INTO Main.Sizes (Id, Name, IsDeleted, CreationDate, LastUpdatedDate) SELECT '67b0cde6-d142-4ffb-2dea-08dc50d44ce6', N'L', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '67b0cde6-d142-4ffb-2dea-08dc50d44ce6');
+INSERT INTO Main.Sizes (Id, Name, IsDeleted, CreationDate, LastUpdatedDate) SELECT '1e089eaf-8acc-427e-2de9-08dc50d44ce6', N'M', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '1e089eaf-8acc-427e-2de9-08dc50d44ce6');
+INSERT INTO Main.Sizes (Id, Name, IsDeleted, CreationDate, LastUpdatedDate) SELECT '6374b2a5-b0d0-4cf5-2de8-08dc50d44ce6', N'S', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '6374b2a5-b0d0-4cf5-2de8-08dc50d44ce6');
+INSERT INTO Main.Sizes (Id, Name, IsDeleted, CreationDate, LastUpdatedDate) SELECT '0e617343-ed5a-48d4-2deb-08dc50d44ce6', N'XL', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '0e617343-ed5a-48d4-2deb-08dc50d44ce6');
+INSERT INTO Main.Sizes (Id, Name, IsDeleted, CreationDate, LastUpdatedDate) SELECT '8b8ceffa-2e14-4b60-2dec-08dc50d44ce6', N'XXL', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '8b8ceffa-2e14-4b60-2dec-08dc50d44ce6');
+INSERT INTO Main.Sizes (Id, Name, IsDeleted, CreationDate, LastUpdatedDate) SELECT '50b83dc9-ff72-4007-8c79-7980891b4e99', N'XXS', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '50b83dc9-ff72-4007-8c79-7980891b4e99');
+INSERT INTO Main.Sizes (Id, Name, IsDeleted, CreationDate, LastUpdatedDate) SELECT '95e2301a-0666-40de-2ded-08dc50d44ce6', N'XXXL', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = '95e2301a-0666-40de-2ded-08dc50d44ce6');
+INSERT INTO Main.Sizes (Id, Name, IsDeleted, CreationDate, LastUpdatedDate) SELECT 'f8262547-4d22-435c-2dee-08dc50d44ce6', N'XXXXL', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Sizes WHERE Id = 'f8262547-4d22-435c-2dee-08dc50d44ce6');
 
 -- Colors
-INSERT INTO Main.Colors (Id, Name) SELECT '6addf2ad-777a-49ba-1226-08dc76b74035', N'C1' WHERE NOT EXISTS (SELECT 1 FROM Main.Colors WHERE Id = '6addf2ad-777a-49ba-1226-08dc76b74035');
-INSERT INTO Main.Colors (Id, Name) SELECT '9cde1f11-44f5-48c3-1227-08dc76b74035', N'C2' WHERE NOT EXISTS (SELECT 1 FROM Main.Colors WHERE Id = '9cde1f11-44f5-48c3-1227-08dc76b74035');
-INSERT INTO Main.Colors (Id, Name) SELECT '1e1ebcbe-c698-4cc9-1228-08dc76b74035', N'C3' WHERE NOT EXISTS (SELECT 1 FROM Main.Colors WHERE Id = '1e1ebcbe-c698-4cc9-1228-08dc76b74035');
-INSERT INTO Main.Colors (Id, Name) SELECT 'b64b4be5-8376-4e61-1229-08dc76b74035', N'C4' WHERE NOT EXISTS (SELECT 1 FROM Main.Colors WHERE Id = 'b64b4be5-8376-4e61-1229-08dc76b74035');
-INSERT INTO Main.Colors (Id, Name) SELECT '7618f128-0518-4fbd-122a-08dc76b74035', N'C5' WHERE NOT EXISTS (SELECT 1 FROM Main.Colors WHERE Id = '7618f128-0518-4fbd-122a-08dc76b74035');
+INSERT INTO Main.Colors (Id, Name, IsDeleted, CreationDate, LastUpdatedDate) SELECT '6addf2ad-777a-49ba-1226-08dc76b74035', N'C1', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Colors WHERE Id = '6addf2ad-777a-49ba-1226-08dc76b74035');
+INSERT INTO Main.Colors (Id, Name, IsDeleted, CreationDate, LastUpdatedDate) SELECT '9cde1f11-44f5-48c3-1227-08dc76b74035', N'C2', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Colors WHERE Id = '9cde1f11-44f5-48c3-1227-08dc76b74035');
+INSERT INTO Main.Colors (Id, Name, IsDeleted, CreationDate, LastUpdatedDate) SELECT '1e1ebcbe-c698-4cc9-1228-08dc76b74035', N'C3', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Colors WHERE Id = '1e1ebcbe-c698-4cc9-1228-08dc76b74035');
+INSERT INTO Main.Colors (Id, Name, IsDeleted, CreationDate, LastUpdatedDate) SELECT 'b64b4be5-8376-4e61-1229-08dc76b74035', N'C4', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Colors WHERE Id = 'b64b4be5-8376-4e61-1229-08dc76b74035');
+INSERT INTO Main.Colors (Id, Name, IsDeleted, CreationDate, LastUpdatedDate) SELECT '7618f128-0518-4fbd-122a-08dc76b74035', N'C5', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Colors WHERE Id = '7618f128-0518-4fbd-122a-08dc76b74035');
 
 -- Categories
-INSERT INTO Main.Categories (Id, Name, Gender) SELECT '611bbeac-9c06-4c25-3c17-08dc76b5e73e', N'men_crew_short', 0 WHERE NOT EXISTS (SELECT 1 FROM Main.Categories WHERE Id = '611bbeac-9c06-4c25-3c17-08dc76b5e73e');
-INSERT INTO Main.Categories (Id, Name, Gender) SELECT 'bf950ece-ffc4-4f36-a44c-c992dadfb0d6', N'men_vneck_short', 0 WHERE NOT EXISTS (SELECT 1 FROM Main.Categories WHERE Id = 'bf950ece-ffc4-4f36-a44c-c992dadfb0d6');
-INSERT INTO Main.Categories (Id, Name, Gender) SELECT '04278274-dc8f-46d2-3c18-08dc76b5e73e', N'women_crew_short', 1 WHERE NOT EXISTS (SELECT 1 FROM Main.Categories WHERE Id = '04278274-dc8f-46d2-3c18-08dc76b5e73e');
-INSERT INTO Main.Categories (Id, Name, Gender) SELECT '7936a00b-b577-4701-b32d-8cb85ccde156', N'women_vneck_short', 1 WHERE NOT EXISTS (SELECT 1 FROM Main.Categories WHERE Id = '7936a00b-b577-4701-b32d-8cb85ccde156');
+INSERT INTO Main.Categories (Id, Name, Gender, IsDeleted, CreationDate, LastUpdatedDate) SELECT '611bbeac-9c06-4c25-3c17-08dc76b5e73e', N'men_crew_short', 0, 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Categories WHERE Id = '611bbeac-9c06-4c25-3c17-08dc76b5e73e');
+INSERT INTO Main.Categories (Id, Name, Gender, IsDeleted, CreationDate, LastUpdatedDate) SELECT 'bf950ece-ffc4-4f36-a44c-c992dadfb0d6', N'men_vneck_short', 0, 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Categories WHERE Id = 'bf950ece-ffc4-4f36-a44c-c992dadfb0d6');
+INSERT INTO Main.Categories (Id, Name, Gender, IsDeleted, CreationDate, LastUpdatedDate) SELECT '04278274-dc8f-46d2-3c18-08dc76b5e73e', N'women_crew_short', 1, 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Categories WHERE Id = '04278274-dc8f-46d2-3c18-08dc76b5e73e');
+INSERT INTO Main.Categories (Id, Name, Gender, IsDeleted, CreationDate, LastUpdatedDate) SELECT '7936a00b-b577-4701-b32d-8cb85ccde156', N'women_vneck_short', 1, 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET() WHERE NOT EXISTS (SELECT 1 FROM Main.Categories WHERE Id = '7936a00b-b577-4701-b32d-8cb85ccde156');
 
 -- Products
 INSERT INTO Main.Products (Id, Name, Description, Price, IsAvailable, CategoryId, IsDeleted, CreationDate, LastUpdatedDate, OrdersCount, ColorId, ImageUrl, ImageUrlWithLogo, Rate, SizeId, IsUnique, [Type]) VALUES ('d3ec564d-8296-4e88-9395-b73d4c846c89', N'Men''s Crew Neck Short Sleeve - Style 1', N'very very good', 150.0, 1, '611bbeac-9c06-4c25-3c17-08dc76b5e73e', 0, SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET(), 0, 'b64b4be5-8376-4e61-1229-08dc76b74035', N'Untitled-1.png', N'null', 5.5, '0e617343-ed5a-48d4-2deb-08dc50d44ce6', 1, 0);

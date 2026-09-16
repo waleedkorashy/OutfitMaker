@@ -1,88 +1,129 @@
 # OutFitMaker
 
-OutFitMaker is an AI-assisted fashion storefront. It serves a t-shirt catalog with
-live stock, real user accounts and orders, and two machine-learning features:
-**Find My Size** (predicts your size from body measurements) and **AI Style Finder**
-(upload a photo, get visually similar products).
+**AI-powered fashion e-commerce platform** — a full-stack storefront with live
+stock, real orders, and two on-device machine-learning features: **Find My Size**
+(predicts your fit from body measurements) and **AI Style Finder** (upload a
+photo, get visually similar products from the catalog).
 
-This repository holds the complete platform — one place for the backend, frontend,
-and the files that power the AI service.
+> Deployed end-to-end and live: React frontend on Cloudflare, ASP.NET Core API on
+> Windows hosting with SQL Server, and a Python Flask AI service in a container.
 
-## What's in here
+---
 
-| Part | Stack | Where |
-| --- | --- | --- |
-| Backend API | ASP.NET Core (.NET 10) · EF Core · Identity + JWT · SQL Server | `Outfit_Maker_DotNet/OutFitMaker.API` |
-| Storefront | React (Vite) · TypeScript · Tailwind CSS v4 | `outfitmaker-frontend/` |
-| AI service | Python · Flask · TensorFlow · scikit-learn | `AI Models/Product Recommendation/` |
+## Highlights
+
+- **Full-stack delivery** — complete platform in one repo: REST API, SQL schema
+  + seed data, React SPA, and the ML service.
+- **Real commerce logic** — accounts, favorites, cart/checkout, per-size stock
+  that actually decrements, and size validation on every order.
+- **Practical ML integration** — a size-prediction model and a visual-similarity
+  engine, both wired into real product data and shipped to production.
+- **Production engineering** — JWT auth, EF Core migrations, lazy model
+  loading to fit a 512 MB memory cap, browser-to-model CORS, CI-friendly
+  `wrangler` static deploy, and graceful cold-start handling.
+- **Runs on free-tier infrastructure** — designed and optimized to work within
+  genuinely constrained hosting (memory, CPU, and idle-sleep limits).
+
+---
+
+## The two AI features
+
+| Feature | How it works |
+| --- | --- |
+| **Find My Size** | A RandomForest classifier turns weight, age, height, waist, hip, and body-shape measurements into a size recommendation (`XXS`–`XXXL`). |
+| **AI Style Finder** | A **MobileNetV2** embedding (GlobalMaxPooling + cosine-normalized) converts a photo into a vector; `k`-nearest-neighbours search returns the closest catalog items. |
+
+The models are served by a small FastAPI/Flask-style HTTP service and are called
+**directly from the browser** (CORS), keeping the ML layer fully decoupled from
+the storefront and the API.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────┐      HTTPS/CORS       ┌──────────────────────┐
+│  React + Vite SPA   │ ───────────────────▶ │  Python Flask AI      │
+│  (Cloudflare)       │  /predict /recommend │  (TF MobileNetV2 +    │
+└──────────┬──────────┘                      │   sklearn container)  │
+           │ REST (JSON + JWT)               └──────────────────────┘
+           ▼
+┌─────────────────────┐
+│  ASP.NET Core API   │  EF Core ──▶ SQL Server
+│  (.NET 10)          │  Identity + JWT + stock/order logic
+└─────────────────────┘
+```
+
+---
+
+## Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| **API** | ASP.NET Core (.NET 10) · EF Core · ASP.NET Identity · JWT · SQL Server |
+| **Frontend** | React · TypeScript · Vite · Tailwind CSS v4 · Axios · React Router |
+| **AI** | Python · Flask · TensorFlow/Keras (MobileNetV2) · scikit-learn · NumPy |
+| **Infrastructure** | Cloudflare (static deploy) · Windows/IIS hosting · Docker container |
+
+---
 
 ## Features
 
-- Shop with gender/collection filters, search, and best-seller views
-- Product details show per-size stock — unavailable sizes are disabled
-- Cart and checkout that reserve real stock from the database
-- Accounts with registration, sign-in, favorites, and order history
-- **Find My Size** — body measurements in, size prediction out (RandomForest model)
-- **AI Style Finder** — quick visual search over the catalog using ResNet50
-  image embeddings and nearest-neighbours
-- Orders record a size for every item, validated against stock
+- Gender/collection filters, search, and best-seller views
+- Product pages with per-size stock levels — unavailable sizes disabled
+- Cart and checkout that reserve real stock atomically
+- Registration, sign-in, favorites, and order history
+- Size prediction and photo-based visual search (see AI table above)
+- Responsive, accessible UI across the whole shopping flow
 
-## How it fits together
+---
 
-The React app talks to the ASP.NET Core API. The API handles authentication,
-orders, favorites, and all data access through EF Core against SQL Server, and
-it proxies the two AI features to the small Flask service. That keeps the
-machine-learning code isolated from the storefront logic.
+## Repository layout
 
-## Run it locally
+| Path | Contents |
+| --- | --- |
+| `OutFit_Maker_DotNet/OutFitMaker.API` | ASP.NET Core API, EF Core data layer, migrations, seed scripts |
+| `outfitmaker-frontend/` | React + TypeScript storefront (Vite, Tailwind) |
+| `AI Models/Product Recommendation/` | Flask service, trained models, Dockerfile, embeddings |
 
-1. **Database** — restore the SQL Server database from `OutFitMaker.bak`
-   (local copy). Alternatively, start the API once and it applies the EF
-   migrations automatically, then load the catalog with `seed_data.sql` and
-   `seed_stock.sql`.
-2. **AI service** — start Flask on port 5000:
+---
 
-   ```bash
-   cd "AI Models/Product Recommendation"
-   pip install -r requirements.txt
-   python API.py
-   ```
+## Run locally
 
-3. **API** — run the `OutFitMaker.API` project (development binds to
-   `http://localhost:5111`).
-4. **Frontend**:
+```bash
+# 1. AI service
+cd "AI Models/Product Recommendation"
+pip install -r requirements.txt
+python API.py                       # http://localhost:5000
 
-   ```bash
-   cd outfitmaker-frontend
-   npm install
-   npm run dev      # http://localhost:5173
-   ```
+# 2. API
+# Run OutFitMaker.API in Visual Studio (binds http://localhost:5111).
+# EF migrations apply on first start; then load seed_data.sql + seed_stock.sql.
 
-## Deployment
+# 3. Frontend
+cd outfitmaker-frontend
+npm install
+npm run dev                        # http://localhost:5173
+```
 
-- **API** — MonsterASP (Windows hosting, .NET 10). Publish the API project and,
-  on the host, set these environment variables: `ConnectionStrings__OutFitMakerConnection`,
-  `JWT__Key`, `EncryptionKey__Key`, `AI__PredictionUrl`, `AI__RecommendationUrl`,
-  and `Cors__AllowedOrigins__0`. Migrations apply on first start; run
-  `seed_data.sql` and `seed_stock.sql` once afterwards.
-- **Frontend** — Cloudflare Pages. Build with `npm run build` (output:
-  `dist`), set `VITE_API_URL` to the deployed API origin, and keep the
-  `public/_redirects` SPA fallback.
-- **AI** — Render.com free tier (Docker web service). Point Render at this repo
-  with the root directory `AI Models/Product Recommendation`, where it builds the
-  `Dockerfile` and serves `/predict`, `/recommend`, and `/health`. A free
-  UptimeRobot ping on `/health` keeps the sleeping free instance warm.
+The frontend defaults to the local API; point `VITE_API_URL` at any deployed
+origin to switch environments.
 
-## About the AI models
+---
 
-The size classifier and the visual-recommendation models were built as a
-separate AI team deliverable (training notebooks live next to the Flask app in
-`AI Models/Product Recommendation/`). The work in this repository integrates
-those models — wrapping them in HTTP endpoints, feeding them real product data,
-and surfacing them in the storefront.
+## Notes
+
+- **Data model** — the size classifier and visual-recommendation models were
+  produced as a separately-trained deliverable (notebooks live beside the Flask
+  app); the focus of this repo is productionizing them: HTTP endpoints, product
+  data integration, and the storefront UX.
+- **Sizing model input order** — `weight, age, height, waist, hips, body_shape`
+  as defined in `FindSizePage`.
+
+---
 
 ## Author
 
-Full-stack project (graduation): ASP.NET Core API, React storefront, and the
-integration of both are mine; the AI models themselves are credited to the AI
-team as noted above.
+Full-stack project by **Waleed Korashy** — ASP.NET Core API, React storefront,
+and end-to-end integration of all three tiers, optimized and deployed on
+free-tier infrastructure.

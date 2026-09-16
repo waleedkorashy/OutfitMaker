@@ -27,7 +27,8 @@ Built with **Vite + React + TypeScript + Tailwind CSS v4**.
 
 ### 1. Run the backend
 
-The frontend talks to the ASP.NET Core API which, in turn, proxies to the Python AI service.
+The frontend talks to the ASP.NET Core API. The AI features call the Python
+Flask service directly from the browser (CORS), so no proxy sits in that path.
 
 - Restore the SQL database from `OutFitMaker.bak`, or run the API once so its
   EF migrations create the schema, then run `seed_data.sql` and `seed_stock.sql`
